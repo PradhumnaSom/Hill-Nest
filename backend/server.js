@@ -11,7 +11,6 @@ const app = express();
 
 // connect DB
 connectDB();
-
 console.log(process.env.MONGO_URI);
 
 // middleware

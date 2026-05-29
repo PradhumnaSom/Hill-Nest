@@ -17,7 +17,7 @@ export default function RoomCard({
       {/* Image with zoom on hover */}
       <div className="overflow-hidden h-64 relative">
         <img
-          src={image}
+          src={'/${image}'}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
