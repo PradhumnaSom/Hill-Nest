@@ -9,17 +9,17 @@ export default function Button({
 }: ButtonProps) {
   const styles = {
     primary:
-      "bg-green-700 text-white hover:bg-green-800",
+      "bg-gradient-to-r from-green-700 to-green-600 text-white shadow-md shadow-green-900/20 hover:shadow-lg hover:shadow-green-900/30 hover:from-green-600 hover:to-green-500",
 
     secondary:
-      "border border-white text-white hover:bg-white hover:text-black",
+      "border-2 border-white/70 text-white backdrop-blur-sm hover:bg-white hover:text-green-800",
   };
 
   return (
     <button
-      className={`px-8 py-4 rounded-2xl font-semibold transition duration-300 hover:scale-105 ${styles[variant]}`}
+      className={`px-7 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-105 active:scale-95 ${styles[variant]}`}
     >
       {children}
     </button>
   );
-}
+}

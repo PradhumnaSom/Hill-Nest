@@ -22,9 +22,13 @@ const rooms = [
 
 export default function Rooms() {
   return (
-    <section id="rooms" className="py-24 bg-gray-50">
+    <section id="rooms" className="py-28 bg-gradient-to-b from-white to-green-50/40">
       <Container>
         <SectionTitle label="Our Rooms" title="Choose Your Perfect Stay" />
+
+        <p className="mt-4 text-center text-gray-400 max-w-xl mx-auto text-sm leading-relaxed">
+          All rooms include complimentary breakfast, Wi-Fi, and stunning views of the surrounding hills.
+        </p>
 
         <div className="mt-14 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => (
@@ -40,3 +44,4 @@ export default function Rooms() {
     </section>
   );
 }
+

@@ -14,25 +14,35 @@ export default function RoomCard({
 }: RoomProps) {
   return (
     <Card>
-      <img
-        src={image}
-        alt={title}
-        className="w-full h-72 object-cover"
-      />
+      {/* Image with zoom on hover */}
+      <div className="overflow-hidden h-64 relative">
+        <img
+          src={'/${image}'}
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        {/* Rating badge */}
+        <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-xs font-semibold text-gray-800 px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+          ⭐ 4.9
+        </span>
+      </div>
 
       <div className="p-6">
-        <h3 className="text-2xl font-bold">
+        <h3 className="text-xl font-bold text-gray-900">
           {title}
         </h3>
 
-        <p className="mt-3 text-gray-600">
+        <p className="mt-2 text-sm text-gray-500 leading-relaxed">
           Cozy interiors with premium comfort and scenic views.
         </p>
 
-        <div className="mt-6 flex items-center justify-between">
-          <span className="text-xl font-semibold text-green-700">
-            {price}
-          </span>
+        <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wide">from</p>
+            <span className="text-lg font-bold text-green-700">
+              {price}
+            </span>
+          </div>
 
           <Button>
             Book
