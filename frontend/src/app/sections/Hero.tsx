@@ -1,5 +1,6 @@
 import Container from "@/app/components/ui/ui/Container";
 import Button from "@/app/components/ui/ui/Button";
+import HomeUserBanner from "@/app/components/user/HomeUserBanner";
 
 export default function Hero() {
   return (
@@ -37,6 +38,8 @@ export default function Hero() {
               <span className="text-green-600">✓</span> Mountain Views
             </span>
           </div>
+
+          <HomeUserBanner />
         </div>
       </Container>
     </section>
