@@ -4,11 +4,11 @@ Project-F is a full-stack hotel booking application with a Next.js frontend and 
 
 ## Features
 
-- Browse rooms on the frontend (`/rooms`)
-- Create and view bookings through backend APIs
+- Browse all room listings in one view on the frontend (`/rooms`)
+- Create bookings from room cards via booking form (`/booking?roomId=...`)
+- View user-specific bookings on `/bookings`
 - Register and login users with JWT-based authentication
-- Access authenticated profile data via protected route
-- Reusable UI components and service-based frontend API calls
+- Protected profile and booking APIs
 
 ## Tech Stack
 
@@ -25,6 +25,8 @@ Project-F/
 |  |- public/
 |  `- src/
 |     |- app/
+|     |  |- booking/
+|     |  |- bookings/
 |     |  |- login/
 |     |  |- register/
 |     |  |- rooms/
@@ -46,14 +48,14 @@ Project-F/
 - `GET /` - Backend status check
 
 ### Rooms
-- `GET /api/rooms` - Get all rooms
+- `GET /api/rooms` - Get all rooms (supports filters)
 - `POST /api/rooms` - Create a room
 - `GET /api/rooms/:id` - Get room by ID
 
-### Bookings
-- `POST /api/bookings` - Create a booking
-- `GET /api/bookings` - Get all bookings
-- `GET /api/bookings/:id` - Get booking by ID
+### Bookings (JWT Protected)
+- `POST /api/bookings` - Create booking for logged-in user
+- `GET /api/bookings` - Get logged-in user bookings
+- `GET /api/bookings/:id` - Get one booking (owner only)
 
 ### Auth
 - `POST /api/auth/register` - Register user
@@ -83,6 +85,7 @@ Create `backend/.env`:
 ```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
+MONGO_DB=your_database_name
 JWT_SECRET=replace_with_a_long_random_secret
 JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:3000
@@ -109,7 +112,7 @@ Frontend default URL: `http://localhost:3000`
 Optional frontend env (`frontend/.env.local`) if backend URL differs:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_API_URL=http://localhost:5000
 ```
 
 ## Quick API Examples
@@ -130,10 +133,10 @@ curl -X POST http://localhost:5000/api/auth/login \
   -d '{"email":"test@example.com","password":"secret123"}'
 ```
 
-Profile:
+Get bookings (JWT required):
 
 ```bash
-curl http://localhost:5000/api/profile \
+curl http://localhost:5000/api/bookings \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
