@@ -1,5 +1,6 @@
 import Button from "@/app/components/ui/ui/Button";
 import Image from "next/image";
+import HomeUserBanner from "@/app/components/user/HomeUserBanner";
 
 const stats = [
   { value: "500+", label: "Happy Guests" },
@@ -100,6 +101,8 @@ export default function Hero() {
               </div>
             ))}
           </div>
+
+          <HomeUserBanner />
         </div>
       </div>
 
