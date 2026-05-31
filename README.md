@@ -1,23 +1,25 @@
 # Project-F: Hotel Booking Web App (Full Stack)
 
-A full-stack hotel booking web application built with Next.js (frontend), Node.js + Express (backend), and MongoDB (database).
+A full-stack hotel booking web app built with Next.js (frontend), Node.js + Express (backend), and MongoDB (database).
 
 ## Features
 
 ### Frontend
-- Responsive UI
-- Room listing with dynamic data
-- Reusable UI components (Card, Button, Navbar, etc.)
-- API integration with backend
+- Responsive UI with Tailwind CSS
+- Dynamic room listing from backend API
+- Reusable UI components (Card, Button, Navbar, Footer)
+- Rooms page at `/rooms`
 
 ### Backend
 - REST API with Express.js
-- MongoDB integration with Mongoose
-- Room management endpoints
+- MongoDB integration using Mongoose
+- Room APIs (`/api/rooms`)
+- Booking APIs (`/api/bookings`)
+- Request validation for booking creation
 
 ### Database
-- MongoDB Atlas
-- Stores room data
+- MongoDB Atlas (or local MongoDB)
+- Collections for `rooms` and `bookings`
 
 ## Project Structure
 
@@ -26,27 +28,34 @@ Project-F/
 |- frontend/
 |  |- public/
 |  `- src/
-|     |- app/
-|     |- components/
-|     |- sections/
-|     `- services/
+|     `- app/
+|        |- components/
+|        |- rooms/
+|        `- sections/
 `- backend/
    |- config/
+   |- controllers/
    |- models/
    |- routes/
    `- server.js
 ```
 
 ## Tech Stack
-- Frontend: Next.js, React, Tailwind CSS
+- Frontend: Next.js, React, TypeScript, Tailwind CSS
 - Backend: Node.js, Express.js
-- Database: MongoDB Atlas
+- Database: MongoDB + Mongoose
 
 ## API Endpoints
 
 ### Rooms
 - `GET /api/rooms` - Get all rooms
-- `POST /api/rooms` - Add a new room
+- `POST /api/rooms` - Create a room
+- `GET /api/rooms/:id` - Get room by ID
+
+### Bookings
+- `POST /api/bookings` - Create a booking
+- `GET /api/bookings` - Get all bookings
+- `GET /api/bookings/:id` - Get booking by ID
 
 ## Setup
 
@@ -64,7 +73,7 @@ cd backend
 npm install
 ```
 
-Create `.env`:
+Create `.env` file in `backend/`:
 
 ```env
 MONGO_URI=your_mongodb_connection_string
@@ -74,8 +83,10 @@ PORT=5000
 Run backend:
 
 ```bash
-npx nodemon server.js
+npm start
 ```
+
+Backend runs on `http://localhost:5000`.
 
 ### 3. Frontend setup
 
@@ -85,9 +96,24 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Frontend runs on `http://localhost:3000`.
+
+## Booking Request Example
+
+`POST /api/bookings`
+
+```json
+{
+  "room": "ROOM_OBJECT_ID",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "checkIn": "2026-06-05",
+  "checkOut": "2026-06-08",
+  "guests": 2
+}
+```
 
 ## Notes
-- Ensure backend is running before frontend requests.
+- Start backend before opening `/rooms` in frontend.
 - Keep `.env` out of version control.
-- Place room images in `frontend/public/` and reference by filename.
+- Place room images in `frontend/public/` and store filename (or full URL) in room `image` field.

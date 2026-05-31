@@ -1,18 +1,24 @@
+// Import Express
 const express = require("express");
+
+// Create router object
 const router = express.Router();
-const Room = require("../models/Room");
+
+// Import controller functions
+const {
+  getRooms,
+  createRoom,
+  getRoomById,
+} = require("../controllers/roomController");
 
 // GET all rooms
-router.get("/", async (req, res) => {
-  const rooms = await Room.find();
-  res.json(rooms);
-});
+router.get("/", getRooms);
 
-// POST room
-router.post("/", async (req, res) => {
-  const room = new Room(req.body);
-  await room.save();
-  res.json(room);
-});
+// POST new room
+router.post("/", createRoom);
 
+// GET single room by ID
+router.get("/:id", getRoomById);
+
+// Export router
 module.exports = router;
