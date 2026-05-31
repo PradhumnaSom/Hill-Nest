@@ -40,6 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# AGENTS
+# AI
 AGENTS.md
 CODEX.md

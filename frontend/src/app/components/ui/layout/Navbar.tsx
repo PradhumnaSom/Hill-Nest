@@ -17,7 +17,7 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const user = getStoredUser();
+  const [user, setUser] = useState<{ name: string; email: string } | null>(() => getStoredUser());
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -28,11 +28,20 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    setUser(getStoredUser());
+  }, [pathname]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
   const isHome = pathname === "/";
   const getNavHref = (hashHref: string) => (isHome ? hashHref : `/${hashHref}`);
 
   const handleLogout = () => {
     logoutUser();
+    setUser(null);
     router.push("/");
   };
 
@@ -46,9 +55,10 @@ export default function Navbar() {
     >
       <Container>
         <div className="flex items-center justify-between py-4 gap-3">
+          {/* Brand */}
           <div className="flex items-center gap-3">
             <Link href="/" className="inline-flex items-center gap-2">
-              <span className="text-2xl">??</span>
+              <span className="text-2xl">🌿</span>
               <div>
                 <h1 className="text-2xl font-bold tracking-tight text-gray-900">
                   Hill<span className="text-green-700">Nest</span>
@@ -58,13 +68,16 @@ export default function Navbar() {
             </Link>
           </div>
 
+          {/* Desktop Nav Links */}
           <div className="hidden md:flex gap-7 font-medium text-sm">
             {navLinks.map(({ label, href }) => (
               <Link
                 key={label}
                 href={getNavHref(href)}
                 className={`relative group transition-colors duration-200 ${
-                  scrolled || !isHome ? "text-gray-600 hover:text-green-700" : "text-white/85 hover:text-white"
+                  scrolled || !isHome
+                    ? "text-gray-600 hover:text-green-700"
+                    : "text-white/85 hover:text-white"
                 }`}
               >
                 {label}
@@ -97,7 +110,10 @@ export default function Navbar() {
               </div>
             ) : (
               <>
-                <Link href="/login" className="hidden text-sm font-semibold text-gray-600 transition-colors hover:text-green-700 sm:inline">
+                <Link
+                  href="/login"
+                  className="hidden text-sm font-semibold text-gray-600 transition-colors hover:text-green-700 sm:inline"
+                >
                   Login
                 </Link>
                 <Link href="/register">
@@ -120,6 +136,7 @@ export default function Navbar() {
         </div>
       </Container>
 
+      {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden bg-white/98 backdrop-blur-xl border-t border-gray-100 animate-fade-in">
           <div className="px-6 py-5 flex flex-col gap-4">
