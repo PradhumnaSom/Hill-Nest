@@ -23,22 +23,51 @@ Project-F is a full-stack hotel booking application with a Next.js frontend and 
 Project-F/
 |- frontend/
 |  |- public/
+|  |  |- hero.png
+|  |  |- img.jpg
+|  |  |- room-deluxe.png
+|  |  |- room-suite.png
+|  |  `- room-garden.png
 |  `- src/
 |     |- app/
-|     |  |- booking/
-|     |  |- bookings/
-|     |  |- login/
-|     |  |- register/
-|     |  |- rooms/
-|     |  `- user/
-|     |- components/
-|     `- services/
+|     |  |- booking/page.tsx
+|     |  |- bookings/page.tsx
+|     |  |- login/page.tsx
+|     |  |- register/page.tsx
+|     |  |- rooms/page.tsx
+|     |  |- user/page.tsx
+|     |  |- components/
+|     |  |  |- auth/AuthForm.tsx
+|     |  |  |- user/HomeUserBanner.tsx
+|     |  |  `- ui/
+|     |  |     |- layout/{Navbar.tsx, Footer.tsx}
+|     |  |     |- room/{RoomCard.tsx, RoomSlider.tsx}
+|     |  |     `- ui/{Button.tsx, Card.tsx, Container.tsx, SectionTitle.tsx}
+|     |  |- sections/{Hero.tsx, Rooms.tsx, Amenities.tsx, GalleryAndTestimonials.tsx}
+|     |  |- globals.css
+|     |  |- layout.tsx
+|     |  `- page.tsx
+|     `- services/authService.ts
+|  |- next.config.ts
+|  |- eslint.config.mjs
+|  `- tsconfig.json
 `- backend/
-   |- config/
+   |- config/db.js
    |- controllers/
-   |- middleware/
+   |  |- authController.js
+   |  |- bookingController.js
+   |  |- profileController.js
+   |  `- roomController.js
+   |- middleware/authMiddleware.js
    |- models/
+   |  |- User.js
+   |  |- Room.js
+   |  `- Booking.js
    |- routes/
+   |  |- authRoutes.js
+   |  |- bookingRoutes.js
+   |  |- profileRoutes.js
+   |  `- roomRoutes.js
    `- server.js
 ```
 
@@ -139,6 +168,92 @@ Get bookings (JWT required):
 curl http://localhost:5000/api/bookings \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
+
+## Contribution Workflow (Step-by-Step)
+
+### 1. User Authentication
+1. User registers with `POST /api/auth/register`.
+2. User logs in with `POST /api/auth/login`.
+3. Backend returns JWT + user data.
+4. Frontend stores token and user locally for authenticated actions.
+
+### 2. Room Listing and Discovery
+1. Frontend opens `/rooms`.
+2. Rooms page fetches data from `GET /api/rooms`.
+3. User applies filters (check-in, check-out, guests, min/max price, room type).
+4. Backend returns matching rooms and frontend renders all room cards.
+
+### 3. Booking Creation
+1. User clicks `Book Room` from a room card.
+2. App redirects to booking flow with selected `roomId` and filter context.
+3. User fills booking form (name, email, dates, guests).
+4. Frontend submits booking to `POST /api/bookings` with bearer token.
+5. Backend validates room id, email format, guest count, and date range.
+6. Booking is saved with linked `user` and `room`.
+
+### 4. Protected Booking Access
+1. User opens `/bookings`.
+2. Frontend calls `GET /api/bookings` with JWT token.
+3. Backend verifies token and returns only the logged-in user's bookings.
+4. For booking detail lookup, `GET /api/bookings/:id` is owner-restricted.
+
+### 5. Profile Access
+1. User opens profile page.
+2. Frontend calls `GET /api/profile` with bearer token.
+3. Backend returns current authenticated user profile data.
+
+### 6. UI Enhancements Added
+1. Rooms tab displays all listings at once (no slider in Book Now tab).
+2. Room cards support fallback image when DB image is missing.
+3. Footer palette and text visibility were improved.
+4. Guest Stories section palette was updated for clearer readability.
+
+## Future Updates (Roadmap)
+
+### Phase 1: Stability and Quality
+- Remove remaining frontend lint warnings and keep CI lint-clean.
+- Add backend test setup (Jest + Supertest) for auth, rooms, and bookings routes.
+- Add frontend test setup (React Testing Library) for key pages and auth flows.
+- Standardize error responses across all backend controllers.
+
+### Phase 2: Booking Experience
+- Add room availability calendar UI to prevent invalid date selections.
+- Add booking cancellation/update endpoints with ownership checks.
+- Add booking status fields (`pending`, `confirmed`, `cancelled`).
+- Add booking confirmation email workflow.
+
+### Phase 3: Role-Based Admin Features
+- Add admin-only room management dashboard (create/update/delete rooms).
+- Protect admin routes using role-based middleware (`authorizeRoles`).
+- Add booking management view for admin users.
+- Add image upload support for room listings (Cloudinary/S3 integration).
+
+### Phase 4: Payments and Business Flow
+- Integrate payment gateway (Razorpay/Stripe) for booking checkout.
+- Add price breakdown (nights, taxes, fees) in booking summary.
+- Support coupon/discount codes and seasonal pricing.
+- Persist payment transaction metadata with bookings.
+
+### Phase 5: Production Readiness
+- Add Docker setup for frontend + backend deployment.
+- Configure environment-specific settings for dev/staging/prod.
+- Add structured logging and monitoring (request logs, error tracking).
+- Improve SEO and performance (LCP/CLS optimization, image strategy).
+
+### Phase 6: UX Enhancements
+- Add user booking search/sort/filter in `/bookings`.
+- Add pagination or infinite scroll for large room datasets.
+- Add multilingual support and accessibility improvements (a11y audit).
+- Add responsive micro-interactions and loading states across all pages.
+
+## Future Goals
+
+- Deliver a complete end-to-end booking experience from discovery to payment confirmation.
+- Improve trust and reliability with robust validations, meaningful error handling, and test coverage.
+- Enable seamless collaboration by keeping APIs, folder structure, and docs easy to maintain.
+- Scale room and booking management with admin tools and role-based access control.
+- Optimize performance and UX for mobile-first usage and low-bandwidth conditions.
+- Prepare production readiness with monitoring, secure secrets handling, and deployment automation.
 
 ## Notes
 
