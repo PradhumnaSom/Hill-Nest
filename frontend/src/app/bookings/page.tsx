@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/app/components/ui/layout/Navbar";
 import Footer from "@/app/components/ui/layout/Footer";
@@ -40,15 +40,16 @@ const formatDate = (value: string) =>
     year: "numeric",
   });
 
-export default function BookingsPage() {
+function BookingsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomId = searchParams.get("roomId");
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const token = getToken();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(Boolean(token));
+  const [error, setError] = useState(token ? "" : "Please login to view your bookings.");
 
   // Booking form state (shown when roomId is present)
   const storedUser = getStoredUser();
@@ -74,11 +75,7 @@ export default function BookingsPage() {
 
   // ─── Fetch user bookings ──────────────────────────────────────────────────
   useEffect(() => {
-    const token = getToken();
-
     if (!token) {
-      setError("Please login to view your bookings.");
-      setLoading(false);
       router.push("/login");
       return;
     }
@@ -93,7 +90,7 @@ export default function BookingsPage() {
       .then((data: Booking[]) => setBookings(data))
       .catch(() => setError("Could not load bookings. Please ensure backend is running."))
       .finally(() => setLoading(false));
-  }, [apiBaseUrl, router]);
+  }, [apiBaseUrl, router, token]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -317,5 +314,13 @@ export default function BookingsPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function BookingsPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-gradient-to-b from-green-50/30 to-white pt-24" />}>
+      <BookingsPageContent />
+    </Suspense>
   );
 }

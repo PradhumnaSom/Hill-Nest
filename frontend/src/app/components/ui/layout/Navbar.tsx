@@ -17,7 +17,7 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(() => getStoredUser());
+  const user = getStoredUser();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -29,11 +29,8 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    setUser(getStoredUser());
-  }, [pathname]);
-
-  useEffect(() => {
-    setMenuOpen(false);
+    const timer = setTimeout(() => setMenuOpen(false), 0);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   const isHome = pathname === "/";
@@ -41,7 +38,6 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logoutUser();
-    setUser(null);
     router.push("/");
   };
 

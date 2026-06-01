@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/app/components/ui/layout/Navbar";
 import Footer from "@/app/components/ui/layout/Footer";
@@ -31,7 +31,7 @@ const initialForm: BookingForm = {
   guests: "1",
 };
 
-export default function BookingPage() {
+function BookingPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomId = searchParams.get("roomId");
@@ -60,15 +60,6 @@ export default function BookingPage() {
       .then((data: Room) => setRoom(data))
       .catch(() => setError("Could not load selected room details."));
   }, [apiBaseUrl, roomId]);
-
-  useEffect(() => {
-    setForm((prev) => ({
-      ...prev,
-      checkIn: searchParams.get("checkIn") || prev.checkIn,
-      checkOut: searchParams.get("checkOut") || prev.checkOut,
-      guests: searchParams.get("guests") || prev.guests,
-    }));
-  }, [searchParams]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -233,5 +224,13 @@ export default function BookingPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-gradient-to-b from-green-50/30 to-white pt-24" />}>
+      <BookingPageContent />
+    </Suspense>
   );
 }

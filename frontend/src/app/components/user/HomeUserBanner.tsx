@@ -1,16 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { getStoredUser } from "@/services/authService";
 
 export default function HomeUserBanner() {
-  const [userName, setUserName] = useState<string | null>(null);
-
-  useEffect(() => {
-    const user = getStoredUser();
-    setUserName(user?.name || null);
-  }, []);
+  const userName = getStoredUser()?.name || null;
 
   if (!userName) {
     return null;

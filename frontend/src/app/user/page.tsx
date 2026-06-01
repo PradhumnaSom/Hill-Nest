@@ -7,20 +7,17 @@ import { getProfile, getStoredUser, logoutUser } from "@/services/authService";
 
 export default function UserPage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
-  const [status, setStatus] = useState("loading");
+  const storedUser = getStoredUser();
+  const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(storedUser);
+  const [status, setStatus] = useState(storedUser ? "ready" : "loading");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const storedUser = getStoredUser();
-
     if (!storedUser) {
       router.replace("/login");
       return;
     }
 
-    setUser(storedUser);
-    setStatus("ready");
     getProfile()
       .then((data) => {
         if (data?.user) {
@@ -35,7 +32,7 @@ export default function UserPage() {
         );
         setStatus("error");
       });
-  }, [router]);
+  }, [router, storedUser]);
 
   const handleLogout = () => {
     logoutUser();
