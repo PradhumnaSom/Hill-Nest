@@ -9,6 +9,7 @@ backend/node_modules/
 .env
 .env.local
 .env.*.local
+backend/.env
 
 # Next.js / build outputs
 /frontend/.next/
