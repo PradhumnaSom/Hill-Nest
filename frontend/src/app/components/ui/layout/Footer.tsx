@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Container from "@/app/components/ui/ui/Container";
 import Button from "@/app/components/ui/ui/Button";
 
@@ -162,3 +161,5 @@ export default function Footer() {
         </div>
       </Container>
     </footer>
+  );
+}

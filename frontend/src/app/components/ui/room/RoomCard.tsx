@@ -60,14 +60,9 @@ export default function RoomCard({
   };
 
   return (
-<<<<<<< HEAD
-    <article className="group bg-white rounded-3xl shadow-md shadow-gray-200/80 hover:-translate-y-2 hover:shadow-2xl hover:shadow-gray-200 transition-all duration-400 overflow-hidden border border-gray-100/60 flex flex-col">
-      {/* Image */}
->>>>>>> 6c7e99b (Add auth scaling and admin route protection)
-=======
     <article className="group bg-white rounded-3xl shadow-md shadow-gray-200/80 hover:-translate-y-2 hover:shadow-2xl transition-all duration-400 overflow-hidden border border-gray-100/60 flex flex-col">
       {/* Image */}
->>>>>>> 8a5d206 (Production-ready authentication, admin access, validation, tests, and frontend roadmap support.)
+
       <div className="relative overflow-hidden h-60 flex-shrink-0">
         <Image
           src={imageSrc}
@@ -115,18 +110,6 @@ export default function RoomCard({
           ))}
         </div>
 
-<<<<<<< HEAD
-              {/* Price & CTA */}
-              <div className="mt-6 pt-5 border-t border-gray-100 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">Starting from</p>
-                  <span className="text-2xl font-extrabold text-green-700 leading-none">{price}</span>
-                  <span className="text-xs text-gray-400 ml-1">/ night</span>
-                </div>
-
-                {actionButton}
-              </div>
-=======
         {/* Price & CTA */}
         <div className="mt-6 pt-5 border-t border-gray-100 flex items-center justify-between gap-3 mt-auto">
           <div>
@@ -162,7 +145,7 @@ export default function RoomCard({
             </Link>
           )}
         </div>
->>>>>>> 8a5d206 (Production-ready authentication, admin access, validation, tests, and frontend roadmap support.)
+
       </div>
     </article>
   );
