@@ -14,15 +14,15 @@ interface RoomProps {
   roomId?: string;
   title: string;
   price: string;
-  image?: string;
+  image?: string; // optional image
   description?: string;
   amenities?: Amenity[];
   badge?: string;
   rating?: number;
   reviews?: number;
+  bookHref?: string;
   onBook?: (roomId?: string, title?: string) => void;
   isBooking?: boolean;
-  bookHref?: string;
 }
 
 const defaultAmenities: Amenity[] = [
@@ -42,9 +42,9 @@ export default function RoomCard({
   badge,
   rating = 4.9,
   reviews = 48,
+  bookHref = "/rooms",
   onBook,
   isBooking = false,
-  bookHref,
 }: RoomProps) {
   const router = useRouter();
   const safeImage = image || "room-deluxe.png";
@@ -59,36 +59,15 @@ export default function RoomCard({
     }
   };
 
-  const actionButton = onBook ? (
-    <Button
-      id={`book-btn-${roomId || title.replace(/\s+/g, "-").toLowerCase()}`}
-      onClick={() => onBook?.(roomId, title)}
-      disabled={isBooking}
-      aria-label={`Book ${title}`}
-      size="sm"
-    >
-      {isBooking ? (
-        <>
-          <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-          Booking…
-        </>
-      ) : (
-        "Book Room"
-      )}
-    </Button>
-  ) : bookHref ? (
-    <Link
-      href={bookHref}
-      className="inline-flex rounded-xl bg-gradient-to-r from-green-700 to-green-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-green-900/20 transition hover:from-green-600 hover:to-green-500"
-    >
-      Book
-    </Link>
-  ) : null;
-
   return (
+<<<<<<< HEAD
     <article className="group bg-white rounded-3xl shadow-md shadow-gray-200/80 hover:-translate-y-2 hover:shadow-2xl hover:shadow-gray-200 transition-all duration-400 overflow-hidden border border-gray-100/60 flex flex-col">
       {/* Image */}
 >>>>>>> 6c7e99b (Add auth scaling and admin route protection)
+=======
+    <article className="group bg-white rounded-3xl shadow-md shadow-gray-200/80 hover:-translate-y-2 hover:shadow-2xl transition-all duration-400 overflow-hidden border border-gray-100/60 flex flex-col">
+      {/* Image */}
+>>>>>>> 8a5d206 (Production-ready authentication, admin access, validation, tests, and frontend roadmap support.)
       <div className="relative overflow-hidden h-60 flex-shrink-0">
         <Image
           src={imageSrc}
@@ -118,10 +97,12 @@ export default function RoomCard({
         </div>
       </div>
 
+      {/* Content */}
       <div className="p-6 flex flex-col flex-1">
         <h3 className="text-xl font-bold text-gray-900 font-serif">{title}</h3>
         <p className="mt-2 text-sm text-gray-500 leading-relaxed">{description}</p>
 
+        {/* Amenity badges */}
         <div className="mt-4 flex flex-wrap gap-2">
           {amenities.map(({ icon, label }) => (
             <span
@@ -134,6 +115,7 @@ export default function RoomCard({
           ))}
         </div>
 
+<<<<<<< HEAD
               {/* Price & CTA */}
               <div className="mt-6 pt-5 border-t border-gray-100 flex items-center justify-between gap-3">
                 <div>
@@ -144,6 +126,43 @@ export default function RoomCard({
 
                 {actionButton}
               </div>
+=======
+        {/* Price & CTA */}
+        <div className="mt-6 pt-5 border-t border-gray-100 flex items-center justify-between gap-3 mt-auto">
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">Starting from</p>
+            <span className="text-2xl font-extrabold text-green-700 leading-none">{price}</span>
+            <span className="text-xs text-gray-400 ml-1">/ night</span>
+          </div>
+
+          {onBook ? (
+            <Button
+              id={`book-btn-${roomId || title.replace(/\s+/g, "-").toLowerCase()}`}
+              onClick={() => onBook(roomId, title)}
+              disabled={isBooking}
+              aria-label={`Book ${title}`}
+              size="sm"
+            >
+              {isBooking ? (
+                <>
+                  <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Booking…
+                </>
+              ) : (
+                "Book Room"
+              )}
+            </Button>
+          ) : (
+            <Link
+              href={bookHref}
+              aria-label={`Book ${title}`}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-green-800 to-emerald-600 px-5 py-2 text-sm font-semibold tracking-wide text-white shadow-lg shadow-green-900/25 transition-all duration-300 hover:scale-105 hover:from-green-700 hover:to-emerald-500 hover:shadow-xl hover:shadow-green-900/35 active:scale-95"
+            >
+              Book Room
+            </Link>
+          )}
+        </div>
+>>>>>>> 8a5d206 (Production-ready authentication, admin access, validation, tests, and frontend roadmap support.)
       </div>
     </article>
   );

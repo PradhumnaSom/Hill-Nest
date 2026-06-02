@@ -78,7 +78,7 @@ export default function Rooms() {
               className="animate-fade-up"
               style={{ animationDelay: `${i * 0.1}s` }}
             >
-              <RoomCard {...room} onBook={handleBookFromHomeCards} />
+              <RoomCard {...room} />
             </div>
           ))}
         </div>

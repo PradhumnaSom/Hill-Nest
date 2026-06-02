@@ -55,7 +55,48 @@ Project-F is a full-stack hotel booking application with a Next.js frontend and 
 - Stores room data, booking data, and user accounts
 - User accounts include hashed passwords, roles, email verification, and password reset fields
 
-## Code Architecture
+## Local Setup
+1. Create a `.env` file in `backend/` using `backend/.env.example`.
+2. If using MongoDB Atlas, set `MONGO_URI` to your Atlas connection string and `MONGO_DB` to your database name.
+3. Make sure your current IP address is whitelisted in Atlas, or add `0.0.0.0/0` temporarily for local development.
+4. For a local MongoDB setup, use:
+   - `MONGO_URI=mongodb://127.0.0.1:27017`
+   - `MONGO_DB=hotel-booking`
+5. Start the backend from `backend/`:
+   ```bash
+   npm install
+   npm start
+   ```
+6. Start the frontend from `frontend/`:
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+> Note: The frontend warning about Turbopack cache being deleted is not fatal. It means the dev server rebuilt the cache after an internal error, and the app should still run normally once the server is ready.
+
+## Contributors
+
+### Pradhumna Som - Authentication & Authorization Architecture
+**Tech Stack Used:**
+- **Backend**: JWT (jsonwebtoken), bcryptjs, crypto (Node.js native)
+- **Security**: HTTP-only cookies, token-based authentication, role-based authorization
+- **Testing**: Node.js built-in test runner
+- **Validation**: Custom Express middleware patterns
+- **Database**: MongoDB with Mongoose (enhanced schemas with validation)
+
+**Key Contributions:**
+- Designed and implemented complete JWT authentication system with refresh tokens
+- Built role-based authorization middleware for admin routes
+- Created reusable validation middleware architecture
+- Implemented email verification and password reset flows
+- Added backend testing infrastructure
+- Enhanced frontend auth service with session management
+
+---
+
+## Contributor Update: Scaling Features
+>>>>>>> 4dd836f (Production-ready authentication, admin access, validation, tests, and frontend roadmap support.)
 
 This release updates the code architecture to keep the backend controllers focused on business logic while moving request validation and authorization into reusable middleware layers.
 
@@ -117,7 +158,10 @@ Project-F/
 - Frontend: Next.js, React, TypeScript, Tailwind CSS
 - Backend: Node.js, Express.js
 - Database: MongoDB + Mongoose
-- Auth: bcryptjs, jsonwebtoken
+- Authentication: JWT (jsonwebtoken), bcryptjs for password hashing
+- Testing: Node.js built-in test runner
+- Security: HTTP-only cookies, crypto for token generation
+- Validation: Custom Express middleware
 
 ## API Endpoints
 

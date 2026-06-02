@@ -10,8 +10,8 @@ const navLinks = [
   { label: "Home", href: "#home" },
   { label: "Rooms", href: "#rooms" },
   { label: "Amenities", href: "#amenities" },
-  { label: "Gallery", href: "#gallery" },
   { label: "Scaling", href: "#scaling" },
+  { label: "Gallery", href: "#gallery" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -38,6 +38,10 @@ export default function Navbar() {
     const timer = setTimeout(() => setMenuOpen(false), 0);
     return () => clearTimeout(timer);
   }, [pathname]);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+>>>>>>> 4dd836f (Production-ready authentication, admin access, validation, tests, and frontend roadmap support.)
 
   useEffect(() => {
     const syncUser = () => setUser(getStoredUser());
@@ -67,6 +71,7 @@ export default function Navbar() {
     >
       <Container>
         <div className="flex items-center justify-between py-4 gap-3">
+<<<<<<< HEAD
 
           {/* ── Brand ── */}
           <Link href="/" className="inline-flex items-center gap-2.5 group flex-shrink-0">
@@ -84,6 +89,22 @@ export default function Navbar() {
           </Link>
 
           {/* ── Desktop nav links ── */}
+=======
+          {/* Brand */}
+          <div className="flex items-center gap-3">
+            <Link href="/" className="inline-flex items-center gap-2">
+              <span className="text-2xl">🌿</span>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+                  Hill<span className="text-green-700">Nest</span>
+                </h1>
+                <p className="text-xs font-medium uppercase tracking-[0.24em] text-gray-500">Home stay booking</p>
+              </div>
+            </Link>
+          </div>
+
+          {/* Desktop Nav Links */}
+>>>>>>> 8a5d206 (Production-ready authentication, admin access, validation, tests, and frontend roadmap support.)
           <div className="hidden md:flex gap-7 font-medium text-sm">
             {navLinks.map(({ label, href }) => (
               <Link
