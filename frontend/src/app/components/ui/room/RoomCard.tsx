@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Button from "@/app/components/ui/ui/Button";
 
 interface Amenity {
@@ -46,18 +45,9 @@ export default function RoomCard({
   onBook,
   isBooking = false,
 }: RoomProps) {
-  const router = useRouter();
   const safeImage = image || "room-deluxe.png";
   const imageSrc =
     safeImage.startsWith("http") || safeImage.startsWith("/") ? safeImage : `/${safeImage}`;
-
-  const handleBook = () => {
-    if (roomId) {
-      router.push(`/bookings?roomId=${roomId}`);
-    } else {
-      router.push("/rooms");
-    }
-  };
 
   return (
     <article className="group bg-white rounded-3xl shadow-md shadow-gray-200/80 hover:-translate-y-2 hover:shadow-2xl transition-all duration-400 overflow-hidden border border-gray-100/60 flex flex-col">

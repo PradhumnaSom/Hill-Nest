@@ -1,23 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
-<<<<<<< HEAD
-import RoomCard from "@/app/components/ui/room/RoomCard";
-=======
-import RoomCard from "../components/ui/room/RoomCard";
->>>>>>> 5aaa773 (Adds production-ready authentication, admin access, validation, tests, and frontend roadmap support v.2.)
-import Navbar from "@/app/components/ui/layout/Navbar";
-import Footer from "@/app/components/ui/layout/Footer";
-import SectionTitle from "@/app/components/ui/ui/SectionTitle";
-import Container from "@/app/components/ui/ui/Container";
-import { buildApiUrl } from "@/services/api";
-
-type Room = {
-  _id: string;
-  name: string;
-  price: number;
-  image: string;
-"use client";
 
 import { useEffect, useState } from "react";
 import RoomCard from "@/app/components/ui/room/RoomCard";
@@ -130,4 +110,3 @@ export default function RoomsPage() {
     </>
   );
 }
-                  <div
