@@ -107,47 +107,46 @@ export default function UserPage() {
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const storedUser = getStoredUser();
-      if (!storedUser) {
-        router.replace("/login");
-        return;
-      }
+    const storedUser = getStoredUser();
+    if (!storedUser) {
+      router.replace("/login");
+      return;
+    }
+
+    queueMicrotask(() => {
       setUser(storedUser);
       setStatus("ready");
+    });
 
-      getProfile()
-        .then((data) => {
-          if (data?.user) setUser(data.user);
-        })
-        .catch((e) => {
-          setError(
-            e instanceof Error ? e.message : "Unable to load profile from the server."
-          );
-          setStatus("error");
-        });
+    getProfile()
+      .then((data) => {
+        if (data?.user) setUser(data.user);
+      })
+      .catch((e) => {
+        setError(
+          e instanceof Error ? e.message : "Unable to load profile from the server."
+        );
+        setStatus("error");
+      });
 
-      const token = getToken();
-      if (token) {
-        fetch(
-          buildApiUrl("/bookings"),
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-          .then((res) => (res.ok ? res.json() : []))
-          .then((bookings: Booking[]) => {
-            const total = bookings.length;
-            const cancelled = bookings.filter(
-              (b) => b.status === "cancelled"
-            ).length;
-            setBookingStats({ total, cancelled, active: total - cancelled });
-            setRecentBookings(bookings.slice(0, 3));
-          })
-          .catch(() => {
-            setBookingStats({ total: 0, active: 0, cancelled: 0 });
-          });
-      }
-    }, 0);
-    return () => clearTimeout(timer);
+    const token = getToken();
+    if (!token) {
+      return;
+    }
+
+    fetch(buildApiUrl("/bookings"), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((bookings: Booking[]) => {
+        const total = bookings.length;
+        const cancelled = bookings.filter((b) => b.status === "cancelled").length;
+        setBookingStats({ total, cancelled, active: total - cancelled });
+        setRecentBookings(bookings.slice(0, 3));
+      })
+      .catch(() => {
+        setBookingStats({ total: 0, active: 0, cancelled: 0 });
+      });
   }, [router]);
 
   const handleLogout = () => {

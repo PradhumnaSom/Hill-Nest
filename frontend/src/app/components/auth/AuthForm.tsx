@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, startTransition, useEffect, useState } from "react";
 import { loginUser, registerUser } from "@/services/authService";
 
 type AuthFormProps = {
@@ -32,6 +32,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const postAuthPath = safeNextPath || (isRegister ? "/" : "/user");
   const switchModeHref = `${isRegister ? "/login" : "/register"}${safeNextPath ? `?next=${encodeURIComponent(safeNextPath)}` : ""}`;
 
+  useEffect(() => {
+    router.prefetch(postAuthPath);
+  }, [postAuthPath, router]);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
@@ -39,12 +43,12 @@ export default function AuthForm({ mode }: AuthFormProps) {
     try {
       if (isRegister) {
         await registerUser({ name, email, password });
-        router.push(postAuthPath);
       } else {
         await loginUser({ email, password });
-        router.push(postAuthPath);
       }
-      router.refresh();
+      startTransition(() => {
+        router.replace(postAuthPath);
+      });
     } catch (currentError) {
       setError(
         currentError instanceof Error

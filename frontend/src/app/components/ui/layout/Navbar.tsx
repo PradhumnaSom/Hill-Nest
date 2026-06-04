@@ -29,13 +29,15 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => setUser(getStoredUser()), 0);
-    return () => clearTimeout(timer);
+    queueMicrotask(() => {
+      setUser(getStoredUser());
+    });
   }, [pathname]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setMenuOpen(false), 0);
-    return () => clearTimeout(timer);
+    queueMicrotask(() => {
+      setMenuOpen(false);
+    });
   }, [pathname]);
 
   const isHome = pathname === "/";
