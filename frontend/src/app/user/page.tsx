@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { buildApiUrl } from "@/services/api";
-import { AuthUser, getProfile, getStoredUser, getToken, logoutUser, saveAuth } from "@/services/authService";
+import { AuthUser, fetchWithAuth, getProfile, getStoredUser, logoutUser } from "@/services/authService";
 
 type BookingStats = {
   total: number;
@@ -41,7 +40,6 @@ function StatCard({ value, label, icon, colorClass, delay }: { value: number; la
 
 export default function UserPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
@@ -52,35 +50,13 @@ export default function UserPage() {
     let isMounted = true;
 
     const loadProfileAndBookings = async () => {
-      const authToken = searchParams.get("authToken");
-      const authUser = searchParams.get("authUser");
-
-      if (authToken && authUser) {
-        try {
-          const parsedUser = JSON.parse(decodeURIComponent(authUser)) as AuthUser;
-          saveAuth({ token: authToken, user: parsedUser });
-          if (parsedUser.role === "admin") {
-            router.replace("/admin");
-            return;
-          }
-          setUser(parsedUser);
-          setStatus("ready");
-          window.history.replaceState(null, "", "/user");
-        } catch {
-          setError("Login succeeded, but the dashboard session could not be restored.");
-        }
-      }
-
       const stored = getStoredUser();
-      const initialToken = getToken();
       if (stored) {
         if (stored.role === "admin") {
           router.replace("/admin");
           return;
         }
         setUser(stored);
-        setStatus("ready");
-      } else if (initialToken) {
         setStatus("ready");
       }
 
@@ -98,24 +74,14 @@ export default function UserPage() {
         setStatus("ready");
       } catch (err) {
         if (!isMounted) return;
-
-        if (stored || initialToken) {
-          setStatus("ready");
-        } else {
-          setError(err instanceof Error ? err.message : "Unable to load your profile");
-          setStatus("error");
-          router.replace("/login");
-          return;
-        }
+        setError(err instanceof Error ? err.message : "Unable to load your profile");
+        setStatus("error");
+        router.replace("/login");
+        return;
       }
 
-      const token = getToken();
-      if (!token) return;
-
       try {
-        const res = await fetch(buildApiUrl("/bookings"), {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetchWithAuth("/bookings");
         const bookings: Booking[] = res.ok ? await res.json() : [];
         if (!isMounted) return;
 
@@ -134,7 +100,7 @@ export default function UserPage() {
     return () => {
       isMounted = false;
     };
-  }, [router, searchParams]);
+  }, [router]);
 
   const handleLogout = () => {
     logoutUser();

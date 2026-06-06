@@ -61,10 +61,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
         setSuccess("Login successful. Opening your dashboard...");
         window.setTimeout(() => {
-          const destination = new URL(nextDestination, window.location.origin);
-          destination.searchParams.set("authToken", data.token);
-          destination.searchParams.set("authUser", encodeURIComponent(JSON.stringify(data.user)));
-          window.location.href = destination.toString();
+          router.replace(nextDestination);
         }, 250);
       }
     } catch (currentError) {

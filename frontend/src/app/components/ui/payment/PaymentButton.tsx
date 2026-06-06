@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { buildApiUrl } from "@/services/api";
-import { getToken } from "@/services/authService";
+import { fetchWithAuth } from "@/services/authService";
 
 // ── Razorpay window type augmentation ────────────────────────────────────────
 declare global {
@@ -79,25 +78,14 @@ export default function PaymentButton({
       return;
     }
 
-    const token = getToken();
-    if (!token) {
-      const next = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-      onError?.("Please login to complete your booking. Redirecting you to sign in...");
-      window.setTimeout(() => {
-        window.location.href = `/login?next=${encodeURIComponent(next)}`;
-      }, 600);
-      return;
-    }
-
     setLoading(true);
 
     try {
       // ── Step 1: Create Razorpay order on backend ──────────────────────
-      const orderRes = await fetch(buildApiUrl("/payment/create-order"), {
+      const orderRes = await fetchWithAuth("/payment/create-order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(bookingPayload),
       });
@@ -105,6 +93,14 @@ export default function PaymentButton({
       const orderData = await orderRes.json().catch(() => ({}));
 
       if (!orderRes.ok) {
+        if (orderRes.status === 401) {
+          const next = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+          onError?.("Please login to complete your booking. Redirecting you to sign in...");
+          window.setTimeout(() => {
+            window.location.href = `/login?next=${encodeURIComponent(next)}`;
+          }, 600);
+          return;
+        }
         onError?.(orderData.message || "Failed to initiate payment.");
         setLoading(false);
         return;
@@ -134,11 +130,10 @@ export default function PaymentButton({
           razorpay_signature: string;
         }) => {
           try {
-            const verifyRes = await fetch(buildApiUrl("/payment/verify"), {
+            const verifyRes = await fetchWithAuth("/payment/verify", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({
                 razorpayOrderId: response.razorpay_order_id,
@@ -151,6 +146,14 @@ export default function PaymentButton({
             const verifyData = await verifyRes.json().catch(() => ({}));
 
             if (!verifyRes.ok) {
+              if (verifyRes.status === 401) {
+                const next = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+                onError?.("Please login to complete your booking. Redirecting you to sign in...");
+                window.setTimeout(() => {
+                  window.location.href = `/login?next=${encodeURIComponent(next)}`;
+                }, 600);
+                return;
+              }
               onError?.(verifyData.message || "Payment verification failed.");
             } else {
               onSuccess();

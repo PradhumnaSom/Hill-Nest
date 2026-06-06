@@ -7,9 +7,33 @@ function HealthDot({ status }: { status: string }) {
   return <span className={`inline-block w-2.5 h-2.5 rounded-full ${colors[status] ?? 'bg-gray-300'}`} />;
 }
 
+type HealthServiceInfo = {
+  status: string;
+  latency?: number;
+  message?: string;
+};
+
+type HealthStatus = {
+  overall?: string;
+  services?: Record<string, HealthServiceInfo>;
+};
+
+type RuntimeMetrics = {
+  activeSessions?: number;
+  memoryUsed?: number;
+  memoryTotal?: number;
+  uptime?: number;
+  nodeVersion?: string;
+};
+
+type MonitoringMetrics = {
+  runtime?: RuntimeMetrics;
+  database?: Record<string, string | number>;
+};
+
 export default function MonitoringPage() {
-  const [health, setHealth] = useState<any>(null);
-  const [metrics, setMetrics] = useState<any>(null);
+  const [health, setHealth] = useState<HealthStatus | null>(null);
+  const [metrics, setMetrics] = useState<MonitoringMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
@@ -23,7 +47,18 @@ export default function MonitoringPage() {
     } finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchAll(); const id = setInterval(fetchAll, 30000); return () => clearInterval(id); }, []);
+  useEffect(() => {
+    const load = async () => {
+      await fetchAll();
+    };
+
+    void load();
+    const id = setInterval(() => {
+      void fetchAll();
+    }, 30000);
+
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="space-y-5">
@@ -49,7 +84,7 @@ export default function MonitoringPage() {
           )}
         </div>
         <div className="grid grid-cols-3 gap-4">
-          {Object.entries(health?.services ?? {}).map(([name, info]: [string, any]) => (
+          {Object.entries(health?.services ?? {}).map(([name, info]: [string, HealthServiceInfo]) => (
             <div key={name} className="border border-gray-100 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="font-medium text-gray-700 capitalize">{name}</p>

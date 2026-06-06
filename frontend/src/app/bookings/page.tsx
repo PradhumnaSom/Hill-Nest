@@ -7,7 +7,7 @@ import Footer from "@/app/components/ui/layout/Footer";
 import Container from "@/app/components/ui/ui/Container";
 import PaymentButton from "@/app/components/ui/payment/PaymentButton";
 import { buildApiUrl } from "@/services/api";
-import { getStoredUser, getToken } from "@/services/authService";
+import { fetchWithAuth, getProfile, getStoredUser } from "@/services/authService";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Room = {
@@ -68,7 +68,6 @@ function BookingsPageContent() {
   const roomId = searchParams.get("roomId");
   const queryString = searchParams.toString();
   const loginRedirectPath = `/bookings${queryString ? `?${queryString}` : ""}`;
-  const [token, setToken] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -91,29 +90,46 @@ function BookingsPageContent() {
 
   // ── Auth init ────────────────────────────────────────────────────────────
   useEffect(() => {
-    const nextToken = getToken();
-    const storedUser = getStoredUser();
+    let isMounted = true;
 
-    if (!nextToken) {
-      queueMicrotask(() => {
-        setError("Please login to view your bookings.");
-        setLoading(false);
-      });
-      router.replace(`/login?next=${encodeURIComponent(loginRedirectPath)}`);
-      return;
-    }
-
-    queueMicrotask(() => {
-      setToken(nextToken);
-      if (storedUser) {
+    const syncSession = async () => {
+      const storedUser = getStoredUser();
+      if (storedUser && isMounted) {
         setForm((prev) => ({
           ...prev,
           name: prev.name || storedUser.name,
           email: prev.email || storedUser.email,
         }));
       }
-      setAuthReady(true);
-    });
+
+      try {
+        const profile = await getProfile();
+        if (!isMounted) return;
+
+        if (profile.user.role === "admin") {
+          router.replace("/admin");
+          return;
+        }
+
+        setForm((prev) => ({
+          ...prev,
+          name: prev.name || profile.user.name,
+          email: prev.email || profile.user.email,
+        }));
+        setAuthReady(true);
+      } catch {
+        if (!isMounted) return;
+        setError("Please login to view your bookings.");
+        setLoading(false);
+        router.replace(`/login?next=${encodeURIComponent(loginRedirectPath)}`);
+      }
+    };
+
+    void syncSession();
+
+    return () => {
+      isMounted = false;
+    };
   }, [loginRedirectPath, router]);
 
   // ── Fetch room details ───────────────────────────────────────────────────
@@ -127,23 +143,20 @@ function BookingsPageContent() {
 
   // ── Fetch bookings list ──────────────────────────────────────────────────
   const fetchBookings = useCallback(async () => {
-    if (!token) return;
-    const res = await fetch(buildApiUrl("/bookings"), {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await fetchWithAuth("/bookings");
     if (!res.ok) throw new Error("Failed to fetch bookings");
     const data: Booking[] = await res.json();
     setBookings(data);
-  }, [token]);
+  }, []);
 
   useEffect(() => {
-    if (!authReady || !token) return;
+    if (!authReady) return;
     queueMicrotask(() => {
       void fetchBookings()
         .catch(() => setError("Could not load bookings. Please ensure backend is running."))
         .finally(() => setLoading(false));
     });
-  }, [authReady, fetchBookings, token]);
+  }, [authReady, fetchBookings]);
 
   // ── Form field change ────────────────────────────────────────────────────
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -154,13 +167,11 @@ function BookingsPageContent() {
   // ── Validate form before opening payment modal ───────────────────────────
   // ── Cancel booking ───────────────────────────────────────────────────────
   const cancelBooking = async (bookingId: string) => {
-    if (!token) return;
     setActionError("");
     setCancellingId(bookingId);
     try {
-      const response = await fetch(buildApiUrl(`/bookings/${bookingId}/cancel`), {
+      const response = await fetchWithAuth(`/bookings/${bookingId}/cancel`, {
         method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
       if (!response.ok) {

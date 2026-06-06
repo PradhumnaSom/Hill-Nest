@@ -2,7 +2,38 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const User = require("../models/User");
 
+const ACCESS_COOKIE_NAME = "project_f_access_token";
 const REFRESH_COOKIE_NAME = "project_f_refresh_token";
+const isProduction = process.env.NODE_ENV === "production";
+const DEFAULT_ACCESS_TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "15m";
+const DEFAULT_REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || "7d";
+
+const durationToMs = (duration, fallbackMs) => {
+  if (typeof duration !== "string") {
+    return fallbackMs;
+  }
+
+  const trimmed = duration.trim();
+  const match = trimmed.match(/^(\d+)([smhd])$/i);
+  if (!match) {
+    const numeric = Number(trimmed);
+    return Number.isFinite(numeric) && numeric > 0 ? numeric * 1000 : fallbackMs;
+  }
+
+  const value = Number(match[1]);
+  const unit = match[2].toLowerCase();
+  const unitMultiplier = {
+    s: 1000,
+    m: 60 * 1000,
+    h: 60 * 60 * 1000,
+    d: 24 * 60 * 60 * 1000,
+  }[unit];
+
+  return value * unitMultiplier;
+};
+
+const accessCookieMaxAge = durationToMs(DEFAULT_ACCESS_TOKEN_EXPIRES_IN, 15 * 60 * 1000);
+const refreshCookieMaxAge = durationToMs(DEFAULT_REFRESH_TOKEN_EXPIRES_IN, 7 * 24 * 60 * 60 * 1000);
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -24,8 +55,9 @@ const setRefreshCookie = (res, token) => {
   res.cookie(REFRESH_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    secure: isProduction,
+    path: "/",
+    maxAge: refreshCookieMaxAge,
   });
 };
 
@@ -33,7 +65,27 @@ const clearRefreshCookie = (res) => {
   res.clearCookie(REFRESH_COOKIE_NAME, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction,
+    path: "/",
+  });
+};
+
+const setAccessCookie = (res, token) => {
+  res.cookie(ACCESS_COOKIE_NAME, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isProduction,
+    path: "/",
+    maxAge: accessCookieMaxAge,
+  });
+};
+
+const clearAccessCookie = (res) => {
+  res.clearCookie(ACCESS_COOKIE_NAME, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isProduction,
+    path: "/",
   });
 };
 
@@ -54,7 +106,6 @@ const hashToken = (token) => crypto.createHash("sha256").update(token).digest("h
 const buildUrl = (req, path) => `${req.protocol}://${req.get("host")}${path}`;
 
 const buildAuthResponse = (user) => ({
-  token: generateToken(user._id),
   user: {
     id: user._id,
     name: user.name,
@@ -78,6 +129,7 @@ const registerUser = async (req, res) => {
     const verificationToken = user.createEmailVerificationToken();
     await user.save({ validateBeforeSave: false });
 
+    setAccessCookie(res, generateToken(user._id));
     setRefreshCookie(res, generateRefreshToken(user._id));
 
     return res.status(201).json({
@@ -85,7 +137,11 @@ const registerUser = async (req, res) => {
       emailVerification: {
         required: true,
         expiresIn: "24h",
-        devUrl: buildUrl(req, `/api/auth/verify-email/${verificationToken}`),
+        ...(isProduction
+          ? {}
+          : {
+              devUrl: buildUrl(req, `/api/auth/verify-email/${verificationToken}`),
+            }),
       },
     });
   } catch (error) {
@@ -103,6 +159,7 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+    setAccessCookie(res, generateToken(user._id));
     setRefreshCookie(res, generateRefreshToken(user._id));
 
     return res.status(200).json(buildAuthResponse(user));
@@ -113,7 +170,7 @@ const loginUser = async (req, res) => {
 
 const refreshSession = async (req, res) => {
   try {
-    const refreshToken = getCookie(req, REFRESH_COOKIE_NAME);
+    const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME] || getCookie(req, REFRESH_COOKIE_NAME);
 
     if (!refreshToken) {
       return res.status(401).json({ message: "Refresh token missing" });
@@ -123,22 +180,25 @@ const refreshSession = async (req, res) => {
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET
     );
-    const user = await User.findById(decoded.id).select("-password");
+    const user = await User.findById(decoded.id).select("name email role emailVerified");
 
     if (!user) {
       clearRefreshCookie(res);
       return res.status(401).json({ message: "User no longer exists" });
     }
 
+    setAccessCookie(res, generateToken(user._id));
     setRefreshCookie(res, generateRefreshToken(user._id));
     return res.status(200).json(buildAuthResponse(user));
   } catch (error) {
+    clearAccessCookie(res);
     clearRefreshCookie(res);
     return res.status(401).json({ message: "Refresh token invalid" });
   }
 };
 
 const logoutUser = (req, res) => {
+  clearAccessCookie(res);
   clearRefreshCookie(res);
   return res.status(200).json({ message: "Logged out successfully" });
 };
@@ -216,6 +276,7 @@ const resetPassword = async (req, res) => {
     user.passwordResetExpires = undefined;
     await user.save();
 
+    setAccessCookie(res, generateToken(user._id));
     setRefreshCookie(res, generateRefreshToken(user._id));
 
     return res.status(200).json({

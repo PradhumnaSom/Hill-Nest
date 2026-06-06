@@ -180,8 +180,8 @@ Default credentials seeded by `prisma db seed`:
 
 | Role | Email | Password |
 |---|---|---|
-| Super Admin | `superadmin@hillnest.in` | `Admin@HillNest2024!` |
-| Admin | `admin@hillnest.in` | `AdminPass@123!` |
+| Super Admin | `admin@hillnest.in` | `admin@123` |
+| Admin | `somadmin@hillnest.in` | `AdminPass@123` |
 
 > ⚠️ **Change these passwords immediately after your first login!**
 

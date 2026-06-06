@@ -16,6 +16,18 @@ interface Props<T> {
   keyField?: keyof T;
 }
 
+function getRowValue<T extends object>(row: T, key: keyof T | string) {
+  if (typeof key === "string" && key in row) {
+    return row[key as keyof T];
+  }
+
+  if (typeof key !== "string" && key in row) {
+    return row[key];
+  }
+
+  return undefined;
+}
+
 function SkeletonRows({ count, cols }: { count: number; cols: number }) {
   return (
     <>
@@ -48,8 +60,8 @@ export default function DataTable<T extends object>({ columns, data, loading = f
   const sortedData = React.useMemo(() => {
     if (!sortKey) return data;
     return [...data].sort((a, b) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const av = (a as any)[sortKey] as string, bv = (b as any)[sortKey] as string;
+      const av = getRowValue(a, sortKey);
+      const bv = getRowValue(b, sortKey);
       const cmp = String(av ?? '').localeCompare(String(bv ?? ''), undefined, { numeric: true });
       return sortDir === 'asc' ? cmp : -cmp;
     });
@@ -93,7 +105,7 @@ export default function DataTable<T extends object>({ columns, data, loading = f
           ) : (
             sortedData.map((row, i) => (
               <tr
-                key={String((row as any)[keyField as string] ?? i)}
+                key={String(getRowValue(row, keyField) ?? i)}
                 onClick={() => onRowClick?.(row)}
                 className={`transition-colors duration-100 ${onRowClick ? 'cursor-pointer hover:bg-indigo-50/50' : 'hover:bg-gray-50/50'}`}
               >
@@ -101,8 +113,7 @@ export default function DataTable<T extends object>({ columns, data, loading = f
                   <td key={String(col.key)} className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                     {col.render
                       ? col.render(row)
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      : String((row as any)[col.key as string] ?? '—')}
+                      : String(getRowValue(row, col.key) ?? '—')}
                   </td>
                 ))}
               </tr>

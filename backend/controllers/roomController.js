@@ -2,6 +2,8 @@
 const Room = require("../models/Room");
 const Booking = require("../models/Booking");
 
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 /**
  * @desc    Get all rooms
  * @route   GET /api/rooms
@@ -21,11 +23,25 @@ const getRooms = async (req, res) => {
     const query = {};
 
     if (minPrice) {
-      query.price = { ...query.price, $gte: Number(minPrice) };
+      const normalizedMinPrice = Number(minPrice);
+      if (!Number.isFinite(normalizedMinPrice)) {
+        return res.status(400).json({
+          message: "Invalid minimum price filter.",
+        });
+      }
+
+      query.price = { ...query.price, $gte: normalizedMinPrice };
     }
 
     if (maxPrice) {
-      query.price = { ...query.price, $lte: Number(maxPrice) };
+      const normalizedMaxPrice = Number(maxPrice);
+      if (!Number.isFinite(normalizedMaxPrice)) {
+        return res.status(400).json({
+          message: "Invalid maximum price filter.",
+        });
+      }
+
+      query.price = { ...query.price, $lte: normalizedMaxPrice };
     }
 
     if (available === "true") {
@@ -33,7 +49,7 @@ const getRooms = async (req, res) => {
     }
 
     if (search) {
-      query.name = { $regex: search, $options: "i" };
+      query.name = { $regex: escapeRegExp(search), $options: "i" };
     }
 
     if (req.query.roomType) {

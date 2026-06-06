@@ -27,16 +27,18 @@ function SimpleLineChart({ data }: { data: { date: string; value: number }[] }) 
 function DonutChart({ data }: { data: { status: string; count: number }[] }) {
   const total = data.reduce((s, d) => s + d.count, 0);
   const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-  let cumPct = 0;
+  const segments = data.map((d, i) => {
+    const pct = total ? (d.count / total) * 100 : 0;
+    const offset = data.slice(0, i).reduce((sum, item) => sum + (total ? (item.count / total) * 100 : 0), 0);
+
+    return { d, pct, offset };
+  });
 
   return (
     <div className="flex items-center gap-4">
       <svg viewBox="0 0 36 36" className="w-24 h-24 -rotate-90">
         <circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#f3f4f6" strokeWidth="3.8" />
-        {data.map((d, i) => {
-          const pct = total ? (d.count / total) * 100 : 0;
-          const offset = cumPct;
-          cumPct += pct;
+        {segments.map(({ d, pct, offset }, i) => {
           return (
             <circle key={d.status} cx="18" cy="18" r="15.9155" fill="transparent"
               stroke={colors[i % colors.length]} strokeWidth="3.8"
@@ -67,10 +69,18 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    getStats()
-      .then(setStats)
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
+    const loadStats = async () => {
+      try {
+        const data = await getStats();
+        setStats(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadStats();
   }, []);
 
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });

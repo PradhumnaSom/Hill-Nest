@@ -33,11 +33,11 @@ export default function AdminLoginPage() {
 
       if (data.accessToken && data.user) {
         localStorage.setItem('admin_access_token', data.accessToken);
-        setUser(data.user as any);
+        setUser(data.user);
         router.replace('/admin');
       }
-    } catch (err: any) {
-      setError(err?.message ?? 'Login failed. Please try again.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

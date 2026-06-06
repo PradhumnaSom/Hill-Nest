@@ -9,7 +9,6 @@ export type AuthUser = {
 };
 
 export type AuthResponse = {
-  token: string;
   user: AuthUser;
   emailVerification?: {
     required: boolean;
@@ -27,8 +26,42 @@ type RegisterPayload = LoginPayload & {
   name: string;
 };
 
-const TOKEN_KEY = "project_f_token";
 const USER_KEY = "project_f_user";
+
+function buildJsonRequestInit(init: RequestInit = {}) {
+  const headers = new Headers(init.headers ?? {});
+
+  if (init.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  return {
+    ...init,
+    credentials: "include" as RequestCredentials,
+    headers,
+  };
+}
+
+export async function fetchWithAuth(path: string, init: RequestInit = {}, retry = true) {
+  const response = await fetch(buildApiUrl(path), buildJsonRequestInit(init));
+
+  if (response.status !== 401 || typeof window === "undefined" || !retry) {
+    return response;
+  }
+
+  try {
+    await refreshSession();
+  } catch {
+    return response;
+  }
+
+  const retryResponse = await fetch(buildApiUrl(path), buildJsonRequestInit(init));
+  if (retryResponse.status === 401) {
+    logoutUser();
+  }
+
+  return retryResponse;
+}
 
 async function requestAuth(
   endpoint: "/auth/login" | "/auth/register",
@@ -72,16 +105,7 @@ export function saveAuth(data: AuthResponse) {
     return;
   }
 
-  localStorage.setItem(TOKEN_KEY, data.token);
   localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-}
-
-export function getToken() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return localStorage.getItem(TOKEN_KEY);
 }
 
 export function getStoredUser() {
@@ -98,7 +122,6 @@ export function logoutUser() {
     return;
   }
 
-  localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
 
   void fetch(buildApiUrl("/auth/logout"), {
@@ -125,28 +148,11 @@ export async function refreshSession() {
 }
 
 export async function getProfile() {
-  let token = getToken();
-
-  if (!token) {
-    const session = await refreshSession();
-    token = session.token;
-  }
-
-  let response = await fetch(buildApiUrl("/profile"), {
-    credentials: "include",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await fetchWithAuth("/profile");
 
   if (response.status === 401) {
-    const session = await refreshSession();
-    response = await fetch(buildApiUrl("/profile"), {
-      credentials: "include",
-      headers: {
-        Authorization: `Bearer ${session.token}`,
-      },
-    });
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.message || "Unauthorized");
   }
 
   const data = await response.json();

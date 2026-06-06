@@ -7,7 +7,7 @@ import Footer from "@/app/components/ui/layout/Footer";
 import Container from "@/app/components/ui/ui/Container";
 import PaymentButton from "@/app/components/ui/payment/PaymentButton";
 import { buildApiUrl } from "@/services/api";
-import { getStoredUser, getToken } from "@/services/authService";
+import { getProfile, getStoredUser } from "@/services/authService";
 
 type Room = {
   _id: string;
@@ -113,24 +113,44 @@ export default function BookingPageClient() {
   }, [roomId, room, selectedRoomError]);
 
   useEffect(() => {
-    if (!getToken()) {
-      const nextPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-      router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
-      return;
-    }
+    let isMounted = true;
 
-    const storedUser = getStoredUser();
-    if (!storedUser) {
-      return;
-    }
+    const syncSession = async () => {
+      const storedUser = getStoredUser();
+      if (storedUser && isMounted) {
+        setForm((prev) => ({
+          ...prev,
+          name: prev.name || storedUser.name,
+          email: prev.email || storedUser.email,
+        }));
+      }
 
-    queueMicrotask(() => {
-      setForm((prev) => ({
-        ...prev,
-        name: prev.name || storedUser.name,
-        email: prev.email || storedUser.email,
-      }));
-    });
+      try {
+        const profile = await getProfile();
+        if (!isMounted) return;
+
+        if (profile.user.role === "admin") {
+          router.replace("/admin");
+          return;
+        }
+
+        setForm((prev) => ({
+          ...prev,
+          name: prev.name || profile.user.name,
+          email: prev.email || profile.user.email,
+        }));
+      } catch {
+        if (!isMounted) return;
+        const nextPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
+      }
+    };
+
+    void syncSession();
+
+    return () => {
+      isMounted = false;
+    };
   }, [router]);
 
   useEffect(() => {

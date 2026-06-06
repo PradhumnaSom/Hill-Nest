@@ -265,8 +265,8 @@ async function main() {
 
   console.log('\n✅ Database seeded successfully!');
   console.log('\n📋 Admin credentials:');
-  console.log('   Super Admin: somadmin@hillnest.in');
-  console.log('   Admin:       admin@hillnest.in');
+  console.log('   Super Admin: admin@hillnest.in');
+  console.log('   Admin:       somadmin@hillnest.in');
   console.log('\n⚠️  Change these passwords immediately in production!');
 }
 

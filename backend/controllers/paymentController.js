@@ -11,6 +11,16 @@ const isPlaceholderRazorpayValue = (value) =>
   value.toLowerCase().includes("replace_me") ||
   value.toLowerCase().includes("replace_with");
 
+const ensureRazorpaySecret = () => {
+  if (isPlaceholderRazorpayValue(process.env.RAZORPAY_KEY_SECRET)) {
+    throw new Error(
+      "Razorpay keys are not configured. Add real RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET values to backend/.env"
+    );
+  }
+
+  return process.env.RAZORPAY_KEY_SECRET;
+};
+
 const getRazorpay = () => {
   if (!_razorpay) {
     if (
@@ -130,6 +140,7 @@ const createOrder = async (req, res) => {
 
 const verifyPayment = async (req, res) => {
   try {
+    const razorpaySecret = ensureRazorpaySecret();
     const {
       razorpayOrderId,
       razorpayPaymentId,
@@ -159,7 +170,7 @@ const verifyPayment = async (req, res) => {
     }
 
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", razorpaySecret)
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
       .digest("hex");
 
