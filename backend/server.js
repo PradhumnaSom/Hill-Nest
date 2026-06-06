@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 
 const connectDB = require("./config/db");
+const { seedRoomsIfEmpty } = require("./config/seedRooms");
 const { apiRateLimiter } = require("./middleware/rateLimitMiddleware");
 
 const app = express();
@@ -59,6 +60,9 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await connectDB();
+    if (process.env.NODE_ENV !== "production") {
+      await seedRoomsIfEmpty();
+    }
     app.listen(PORT, HOST, () => {
       console.log(`Server running on http://${HOST}:${PORT}`);
     });
